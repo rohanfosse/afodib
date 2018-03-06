@@ -4,6 +4,7 @@
     <style>
     .error {color: #FF0000;}
     </style>
+    <link rel=icon href=/afodib-cafe/favicon.png>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="description" content="AFoDIB Café Michel">
@@ -82,6 +83,55 @@
       <br><br>
       <input type="submit" name="submit" value="Submit">  
     </form>
+    
+    <?php
+        if (!empty($_POST["name"]) && !empty($_POST["email"]) && !empty($_POST["reference"]) && !empty($_POST["price"]) && empty($_POST["nameErr"]) && empty($_POST["emailErr"]) && empty($_POST["referenceErr"]) && empty($_POST["priceErr"])) {
+            echo "<h2>Summary:</h2>";
+            echo "Name: ";
+            echo $name;
+            echo "<br>";
+            echo "E-mail: ";
+            echo $email;
+            echo "<br>";
+            echo "Reference: ";
+            echo $reference;
+            echo "<br>";
+            echo "Price: ";
+            echo $price;
+            echo "<br>";
+            
+            $tarifs = array_map('str_getcsv', file('tarifs.csv'));
+            $nom_ref = $prixHT_ref = "";
+            foreach($tarifs as $line){
+                if($line[0] == $reference){
+                    $nom_ref = $line[1];
+                    $prixHT_ref = $line[2];
+                    echo $nom_ref;
+                    echo "<br>";
+                    echo $prixHT_ref;
+                    echo "<br>";
+                }
+            }
+            
+            if (!file_exists ("out.csv")) {
+                $handle = fopen("out.csv", "a");
+                fputcsv($handle, array('Timestamp', 'Date', 'Name', 'Email', 'Reference', 'NameReference', 'HTPrice', 'DesiredPrice'), ",");
+                fclose($handle);
+            }
+            
+            $handle = fopen("out.csv", "a");
+            fputcsv($handle, array(time(), date('d-m-Y H:i:s'), $_POST["name"], $_POST["email"], $_POST["reference"], $nom_ref, $prixHT_ref, $_POST["price"]), ",");
+            fclose($handle);
+            $name = $email = $reference = $price = "";
+            $_POST["name"] = $_POST["email"] = $_POST["reference"] = $_POST["price"] = "";
+        }
+    ?>
+    
+    <script type="text/javascript">
+        var nom_ref = "<?php echo $nom_ref ?>"; // as string
+        var prixHT_ref = <?php echo $prixHT_ref ?>; // as number
+        var prixHT_ref_str = "<?php echo $prixHT_ref ?>"; // as string
+    </script>
 
 </body>
 </html>
